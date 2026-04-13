@@ -112,8 +112,18 @@ input.e,select.e{border-color:var(--err)!important;}
 .motor-box{background:var(--green-lt);border:1.5px dashed rgba(29,122,76,.25);border-radius:10px;padding:16px;margin-top:4px;}
 .motor-box-title{font-size:11px;font-weight:700;color:#155737;text-transform:uppercase;letter-spacing:1px;margin-bottom:13px;opacity:.8;}
 
-/* year select */
-.year-sel-wrap{position:relative;}
+/* mobil bucket box */
+.mobil-box{background:rgba(27,95,168,.04);border:1.5px dashed rgba(27,95,168,.2);border-radius:10px;padding:16px;margin-top:4px;}
+.mobil-box-title{font-size:11px;font-weight:700;color:var(--navy2);text-transform:uppercase;letter-spacing:1px;margin-bottom:13px;opacity:.8;}
+.bucket-group{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+@media(max-width:400px){.bucket-group{grid-template-columns:repeat(2,1fr);}}
+.bcard{position:relative;}
+.bcard input[type=radio]{position:absolute;opacity:0;width:0;height:0;}
+.bcard label{display:flex;align-items:center;justify-content:center;padding:10px 6px;border:2px solid var(--border);border-radius:9px;cursor:pointer;font-size:13px;font-weight:700;color:var(--muted);background:#fafcff;transition:all .2s;user-select:none;font-variant-numeric:tabular-nums;letter-spacing:.3px;}
+.bcard input:checked+label{border-color:var(--navy2);background:rgba(22,55,88,.08);color:var(--navy2);}
+.bcard input:checked+label .bck-days{color:var(--navy2);opacity:.7;}
+.bck-num{font-size:14px;font-weight:800;}
+.bck-days{font-size:10px;font-weight:500;color:var(--muted);margin-left:3px;}
 .year-sel-wrap select{padding-right:32px;cursor:pointer;}
 .year-sel-wrap::after{content:'📅';position:absolute;right:9px;top:50%;transform:translateY(-50%);pointer-events:none;font-size:13px;}
 
@@ -413,6 +423,61 @@ table.adm-tbl{width:100%;border-collapse:collapse;font-size:12.5px;color:var(--a
                   </div>
                   <span class="f-err" id="errTypeMotor">Wajib dipilih</span>
                 </div>
+              </div><!-- /fg c2 -->
+
+              <!-- Bucket Motor -->
+              <div class="divider" style="margin:14px 0 12px;"></div>
+              <div class="field">
+                <label class="lbl">Bucket (Hari Overdue) <span class="req">*</span></label>
+                <div class="bucket-group" style="grid-template-columns:repeat(2,1fr);max-width:320px;">
+                  <div class="bcard">
+                    <input type="radio" id="bktm1" name="bucketMotor" value="61-90">
+                    <label for="bktm1"><span class="bck-num">61–90</span><span class="bck-days">hari</span></label>
+                  </div>
+                  <div class="bcard">
+                    <input type="radio" id="bktm2" name="bucketMotor" value=">90">
+                    <label for="bktm2"><span class="bck-num">&gt;90</span><span class="bck-days">hari</span></label>
+                  </div>
+                </div>
+                <span class="f-err" id="errBucketMotor">Wajib dipilih</span>
+              </div>
+
+            </div><!-- /motor-box -->
+          </div><!-- /rowMotorDetail -->
+
+          <!-- Mobil Bucket Box -->
+          <div class="full cond-row ch" id="rowMobilDetail">
+            <div class="mobil-box">
+              <div class="mobil-box-title">🚗 Bucket Overdue Mobil</div>
+              <div class="field">
+                <label class="lbl">Bucket (Hari Overdue) <span class="req">*</span></label>
+                <div class="bucket-group">
+                  <div class="bcard">
+                    <input type="radio" id="bkt1" name="bucketMobil" value="91-120">
+                    <label for="bkt1"><span class="bck-num">91–120</span><span class="bck-days">hari</span></label>
+                  </div>
+                  <div class="bcard">
+                    <input type="radio" id="bkt2" name="bucketMobil" value="121-150">
+                    <label for="bkt2"><span class="bck-num">121–150</span><span class="bck-days">hari</span></label>
+                  </div>
+                  <div class="bcard">
+                    <input type="radio" id="bkt3" name="bucketMobil" value="151-180">
+                    <label for="bkt3"><span class="bck-num">151–180</span><span class="bck-days">hari</span></label>
+                  </div>
+                  <div class="bcard">
+                    <input type="radio" id="bkt4" name="bucketMobil" value="181-210">
+                    <label for="bkt4"><span class="bck-num">181–210</span><span class="bck-days">hari</span></label>
+                  </div>
+                  <div class="bcard">
+                    <input type="radio" id="bkt5" name="bucketMobil" value="211-240">
+                    <label for="bkt5"><span class="bck-num">211–240</span><span class="bck-days">hari</span></label>
+                  </div>
+                  <div class="bcard">
+                    <input type="radio" id="bkt6" name="bucketMobil" value=">240">
+                    <label for="bkt6"><span class="bck-num">&gt;240</span><span class="bck-days">hari</span></label>
+                  </div>
+                </div>
+                <span class="f-err" id="errBucketMobil">Wajib dipilih</span>
               </div>
             </div>
           </div>
@@ -816,7 +881,7 @@ table.adm-tbl{width:100%;border-collapse:collapse;font-size:12.5px;color:var(--a
 /* ────────────────────────────────────────────────────────────
    ⚙  KONFIGURASI
 ──────────────────────────────────────────────────────────── */
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbztgcFSnn5I5dsXYf-hUuHRW3JXiDy4uTqVfiJxeiRfZc8TDY-HTMrakhbpI6VZfd54Lg/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz1jqBe-W-bZBZMP2EdtvgD8Jnm1ZdTUNKCHePjkV14-XBEunTbvJPoWWHcfhLm4WudCw/exec';
 const ADMIN_PASS = 'SMM@2025';
 const MAX_MB     = 10;
 const LS_KEY     = 'smm_cfg_v5';
@@ -1028,7 +1093,10 @@ function getPenyelesaian(){ return document.querySelector('input[name="penyelesa
 
 function onJenisKendaraanChange() {
   const jk = getJK();
+
   toggleRow('rowMotorDetail', jk === 'MOTOR');
+  toggleRow('rowMobilDetail', jk === 'MOBIL');
+
   if (jk !== 'MOTOR') {
     document.getElementById('tahunKendaraan').value = '';
     document.getElementById('kategoriMotor').value  = '';
@@ -1036,7 +1104,12 @@ function onJenisKendaraanChange() {
     document.getElementById('merkMotor').disabled   = true;
     document.getElementById('typeMotor').innerHTML  = '<option value="">— Pilih Merk dulu —</option>';
     document.getElementById('typeMotor').disabled   = true;
+    document.querySelectorAll('input[name="bucketMotor"]').forEach(r => r.checked = false);
   }
+  if (jk !== 'MOBIL') {
+    document.querySelectorAll('input[name="bucketMobil"]').forEach(r => r.checked = false);
+  }
+
   if (getIsBayar()) renderBayarOptions(jk);
   updateProgress();
 }
@@ -1195,9 +1268,10 @@ function updateProgress() {
 
   // Base: Area, Cabang, idMitra, namaMitra, NPP, TGL, JK, Penyelesaian, LokasiArea, LokasiCabang, ScanRv, ScanSk, FotoSetor = 13
   let total = 13;
-  if (isMotor) total += 4;  // tahun, kategori, merk, type
-  if (bayar)   total += 2;  // kategori bayar, actual bayar
-  if (pickup)  total += 4;  // nopol, foto unit, stnk, surat sukarela
+  if (isMotor)        total += 5;  // tahun, kategori, merk, type, bucket motor
+  if (jk === 'MOBIL') total += 1;  // bucket
+  if (bayar)          total += 2;  // kategori bayar, actual bayar
+  if (pickup)         total += 4;  // nopol, foto unit, stnk, surat sukarela
 
   const v = id => (document.getElementById(id)?.value || '').trim() !== '';
   let n = 0;
@@ -1213,7 +1287,9 @@ function updateProgress() {
     if (v('kategoriMotor'))  n++;
     if (v('merkMotor'))      n++;
     if (v('typeMotor'))      n++;
+    if (document.querySelector('input[name="bucketMotor"]:checked')) n++;
   }
+  if (jk === 'MOBIL' && document.querySelector('input[name="bucketMobil"]:checked')) n++;
   if (ps) n++;
   if (bayar) {
     if (document.querySelector('input[name="kategoriBayar"]:checked')) n++;
@@ -1235,6 +1311,12 @@ function updateProgress() {
   document.getElementById('progFill').style.width  = pct + '%';
   document.getElementById('progLabel').textContent = `${n} / ${total} terisi`;
 }
+
+document.querySelectorAll('input[name="bucketMotor"]').forEach(r =>
+  r.addEventListener('change', () => { clearE('errBucketMotor'); updateProgress(); }));
+
+document.querySelectorAll('input[name="bucketMobil"]').forEach(r =>
+  r.addEventListener('change', () => { clearE('errBucketMobil'); updateProgress(); }));
 
 // Auto-clear errors on change
 document.querySelectorAll('input:not([type=file]):not([type=radio]),select').forEach(el =>
@@ -1288,6 +1370,11 @@ document.getElementById('mainForm').addEventListener('submit', async e => {
     req('kategoriMotor',  'errKategoriMotor');
     req('merkMotor',      'errMerkMotor');
     req('typeMotor',      'errTypeMotor');
+    if (!document.querySelector('input[name="bucketMotor"]:checked')) { showE('errBucketMotor', null); ok = false; }
+  }
+
+  if (jk === 'MOBIL') {
+    if (!document.querySelector('input[name="bucketMobil"]:checked')) { showE('errBucketMobil', null); ok = false; }
   }
 
   if (!ps) { showE('errPenyelesaian', null); ok = false; }
@@ -1343,6 +1430,8 @@ document.getElementById('mainForm').addEventListener('submit', async e => {
     NPP:             nppVal,
     TGL_RV:          document.getElementById('tglRv').value,
     JENIS_KENDARAAN: jk,
+    BUCKET_MOBIL:    jk === 'MOBIL' ? (document.querySelector('input[name="bucketMobil"]:checked')?.value || '') : '',
+    BUCKET_MOTOR:    isMotor        ? (document.querySelector('input[name="bucketMotor"]:checked')?.value || '') : '',
     TAHUN_KENDARAAN: isMotor ? document.getElementById('tahunKendaraan').value : '',
     KATEGORI_MOTOR:  isMotor ? document.getElementById('kategoriMotor').value  : '',
     MERK_MOTOR:      isMotor ? document.getElementById('merkMotor').value      : '',
@@ -1399,6 +1488,8 @@ function resetForm() {
   document.querySelectorAll('.upload-zone').forEach(z => z.classList.remove('has-file','ez'));
   document.querySelectorAll('.f-err').forEach(e => e.classList.remove('show'));
   document.querySelectorAll('.e').forEach(e => e.classList.remove('e'));
+  document.querySelectorAll('input[name="bucketMotor"]').forEach(r => r.checked = false);
+  document.querySelectorAll('input[name="bucketMobil"]').forEach(r => r.checked = false);
   document.querySelectorAll('.cond-row').forEach(r => { r.classList.add('ch'); r.classList.remove('cv'); });
   document.getElementById('kbRadioList').innerHTML = '';
   document.getElementById('kbHint').classList.remove('hidden');
