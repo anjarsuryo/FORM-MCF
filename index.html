@@ -330,15 +330,20 @@ table.adm-tbl{width:100%;border-collapse:collapse;font-size:12.5px;color:var(--a
           </div>
 
           <div class="field">
-            <label class="lbl">ID Mitra <span class="req">*</span></label>
-            <input id="idMitra" type="text" readonly placeholder="Terisi otomatis">
-            <span class="f-hint">Terisi otomatis berdasarkan cabang</span>
+            <label class="lbl" for="idMitra">ID Mitra <span class="req">*</span></label>
+            <input id="idMitra" type="text" required
+              placeholder="Contoh: 96523PS002"
+              autocomplete="off"
+              oninput="onIdMitraInput()">
+            <span class="f-err" id="errIdMitra">Wajib diisi</span>
           </div>
 
           <div class="field">
-            <label class="lbl">Nama Mitra <span class="req">*</span></label>
-            <input id="namaMitra" type="text" readonly placeholder="Terisi otomatis">
-            <span class="f-hint">Terisi otomatis berdasarkan ID Mitra</span>
+            <label class="lbl" for="namaMitra">Nama Mitra <span class="req">*</span></label>
+            <input id="namaMitra" type="text" required
+              placeholder="Nama lengkap mitra"
+              autocomplete="off">
+            <span class="f-err" id="errNamaMitra">Wajib diisi</span>
           </div>
 
         </div>
@@ -691,40 +696,42 @@ table.adm-tbl{width:100%;border-collapse:collapse;font-size:12.5px;color:var(--a
         </div>
       </div>
 
-      <!-- ══ SECTION 4: DATA BANK (auto-lookup) ════════════ -->
-      <div class="section">
-        <div class="sec-title">Data Bank Mitra</div>
-        <div class="fg c3">
+      <!-- ══ SECTION 4: DATA BANK (sementara disembunyikan) ══ -->
+      <div class="hidden" id="sectionBank">
+        <div class="section">
+          <div class="sec-title">Data Bank Mitra</div>
+          <div class="fg c3">
 
-          <div class="field">
-            <label class="lbl">Nama Bank</label>
-            <div class="info-badge" id="ibBank">
-              <span class="ib-icon">🏦</span>
-              <span class="ib-val" id="ibBankVal"><span class="ib-placeholder">Terisi otomatis</span></span>
+            <div class="field">
+              <label class="lbl">Nama Bank</label>
+              <div class="info-badge" id="ibBank">
+                <span class="ib-icon">🏦</span>
+                <span class="ib-val" id="ibBankVal"><span class="ib-placeholder">Terisi otomatis</span></span>
+              </div>
             </div>
-          </div>
 
-          <div class="field">
-            <label class="lbl">Nomor Rekening</label>
-            <div class="info-badge" id="ibRek">
-              <span class="ib-icon">💳</span>
-              <span class="ib-val" id="ibRekVal"><span class="ib-placeholder">Terisi otomatis</span></span>
+            <div class="field">
+              <label class="lbl">Nomor Rekening</label>
+              <div class="info-badge" id="ibRek">
+                <span class="ib-icon">💳</span>
+                <span class="ib-val" id="ibRekVal"><span class="ib-placeholder">Terisi otomatis</span></span>
+              </div>
             </div>
-          </div>
 
-          <div class="field">
-            <label class="lbl">Nama Rekening</label>
-            <div class="info-badge" id="ibNamaRek">
-              <span class="ib-icon">👤</span>
-              <span class="ib-val" id="ibNamaRekVal"><span class="ib-placeholder">Terisi otomatis</span></span>
+            <div class="field">
+              <label class="lbl">Nama Rekening</label>
+              <div class="info-badge" id="ibNamaRek">
+                <span class="ib-icon">👤</span>
+                <span class="ib-val" id="ibNamaRekVal"><span class="ib-placeholder">Terisi otomatis</span></span>
+              </div>
             </div>
-          </div>
 
+          </div>
+          <p style="font-size:11.5px;color:var(--muted);margin-top:10px;">
+            ℹ️ Data bank diambil dari data master mitra. Jika ada perubahan, hubungi admin untuk update via panel Admin.
+          </p>
         </div>
-        <p style="font-size:11.5px;color:var(--muted);margin-top:10px;">
-          ℹ️ Data bank diambil dari data master mitra. Jika ada perubahan, hubungi admin untuk update via panel Admin.
-        </p>
-      </div>
+      </div><!-- /sectionBank -->
 
       <!-- ══ SUBMIT ══════════════════════════════════════════ -->
       <div class="submit-wrap">
@@ -881,7 +888,7 @@ table.adm-tbl{width:100%;border-collapse:collapse;font-size:12.5px;color:var(--a
 /* ────────────────────────────────────────────────────────────
    ⚙  KONFIGURASI
 ──────────────────────────────────────────────────────────── */
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz1jqBe-W-bZBZMP2EdtvgD8Jnm1ZdTUNKCHePjkV14-XBEunTbvJPoWWHcfhLm4WudCw/exec';
+const SCRIPT_URL = 'PASTE_URL_APPS_SCRIPT_DISINI';
 const ADMIN_PASS = 'SMM@2025';
 const MAX_MB     = 10;
 const LS_KEY     = 'smm_cfg_v5';
@@ -1012,11 +1019,29 @@ function onCabangChange() {
   clearE('errCabang');
   const rec = cfg.cabang.find(c => c.area === area && c.cabang === cabang);
   if (rec) {
-    document.getElementById('idMitra').value   = rec.idMitra;
+    // Pre-fill sebagai saran, tapi tetap bisa diedit bebas
+    const idEl   = document.getElementById('idMitra');
+    const namaEl = document.getElementById('namaMitra');
+    if (!idEl.value.trim())   idEl.value   = rec.idMitra;
     const mr = cfg.mitra.find(m => m.id === rec.idMitra);
-    document.getElementById('namaMitra').value = mr ? mr.nama : '(ID tidak ditemukan)';
+    if (!namaEl.value.trim()) namaEl.value = mr ? mr.nama : '';
     fillBankInfo(mr);
-  } else { resetMitraBank(); }
+  } else {
+    fillBankInfo(null);
+  }
+  updateProgress();
+}
+
+function onIdMitraInput() {
+  // Saat user ketik ID Mitra manual, coba lookup nama dari cfg
+  const id = document.getElementById('idMitra').value.trim();
+  const mr = cfg.mitra.find(m => m.id === id);
+  if (mr) {
+    const namaEl = document.getElementById('namaMitra');
+    if (!namaEl.value.trim()) namaEl.value = mr.nama;
+    fillBankInfo(mr);
+  }
+  clearE('errIdMitra');
   updateProgress();
 }
 
@@ -1356,6 +1381,8 @@ document.getElementById('mainForm').addEventListener('submit', async e => {
 
   req('selArea',   'errArea');
   req('selCabang', 'errCabang');
+  req('idMitra',   'errIdMitra');
+  req('namaMitra', 'errNamaMitra');
 
   const nppEl  = document.getElementById('npp');
   const nppVal = nppEl.value.trim();
@@ -1403,13 +1430,6 @@ document.getElementById('mainForm').addEventListener('submit', async e => {
     needFile('fSuratSukarela', 'zSuratSukarela', 'errSuratSukarela');
   }
 
-  // Bank check (soft — warn if not filled)
-  const mr = cfg.mitra.find(m => m.id === document.getElementById('idMitra').value);
-  if (!mr?.bank) {
-    showToast('⚠️ Data bank mitra belum lengkap di data master. Hubungi admin.');
-    ok = false;
-  }
-
   if (!ok) {
     showToast('Harap lengkapi semua isian wajib (*)');
     document.querySelector('.f-err.show, .e, .ez')?.scrollIntoView({ behavior:'smooth', block:'center' });
@@ -1418,15 +1438,16 @@ document.getElementById('mainForm').addEventListener('submit', async e => {
 
   // Build payload
   const now = new Date();
+  const mr  = cfg.mitra.find(m => m.id === document.getElementById('idMitra').value.trim());
   const payload = {
     action:          'submitForm',
     AREA:            document.getElementById('selArea').value,
     CABANG:          document.getElementById('selCabang').value,
-    ID_MITRA:        document.getElementById('idMitra').value,
-    NAMA_MITRA:      document.getElementById('namaMitra').value,
-    NAMA_BANK:       mr?.bank    || '',
-    REKENING:        mr?.rekening|| '',
-    NAMA_REKENING:   mr?.namaRek || '',
+    ID_MITRA:        document.getElementById('idMitra').value.trim(),
+    NAMA_MITRA:      document.getElementById('namaMitra').value.trim(),
+    NAMA_BANK:       mr?.bank     || '',
+    REKENING:        mr?.rekening || '',
+    NAMA_REKENING:   mr?.namaRek  || '',
     NPP:             nppVal,
     TGL_RV:          document.getElementById('tglRv').value,
     JENIS_KENDARAAN: jk,
