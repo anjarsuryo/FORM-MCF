@@ -780,7 +780,26 @@ table.adm-tbl{width:100%;border-collapse:collapse;font-size:12.5px;color:var(--a
       <div class="dot" id="connDot"></div>
       <span id="connLabel">Memeriksa koneksi...</span>
     </div>
-    <div class="adm-tabs">
+
+    <!-- Setup warning — hanya muncul jika SCRIPT_URL belum diisi -->
+    <div id="setupWarn" class="hidden" style="
+      background:rgba(245,166,35,.1);border:1.5px solid rgba(245,166,35,.4);
+      border-radius:11px;padding:16px 18px;margin-bottom:18px;font-size:13px;color:#e8c060;">
+      <div style="font-family:'Sora',sans-serif;font-weight:700;font-size:13.5px;margin-bottom:8px;">
+        ⚠️ Apps Script Belum Dikonfigurasi
+      </div>
+      <p style="line-height:1.7;color:var(--adm-muted);">
+        Data hanya tersimpan di browser (lokal). Untuk menyimpan ke server & Google Sheets:<br>
+        <strong style="color:#e8c060;">1.</strong> Deploy <code>appsscript_v8.gs</code> sebagai Web App di
+        <a href="https://script.google.com" target="_blank" style="color:#f5c842;">script.google.com</a><br>
+        <strong style="color:#e8c060;">2.</strong> Copy URL hasil deploy<br>
+        <strong style="color:#e8c060;">3.</strong> Buka file HTML ini dengan Notepad → cari <code>PASTE_URL_APPS_SCRIPT_DISINI</code> → ganti dengan URL tersebut → upload ulang ke GitHub
+      </p>
+      <p style="margin-top:10px;color:rgba(232,192,96,.7);font-size:12px;">
+        💡 Sementara ini, Anda tetap bisa mengelola data di admin panel dan data tersimpan di browser.
+        Refresh halaman = data hilang jika belum tersimpan ke server.
+      </p>
+    </div>
       <button class="adm-tab active" id="tabMitra"  onclick="switchAdmTab('Mitra')">👤 Data Mitra &amp; Bank</button>
       <button class="adm-tab"        id="tabCabang" onclick="switchAdmTab('Cabang')">🏢 Data Cabang</button>
     </div>
@@ -1572,6 +1591,8 @@ async function checkAdminConn() {
 function setConn(c, msg) {
   document.getElementById('connDot').className    = 'dot '+c;
   document.getElementById('connLabel').textContent = msg;
+  // Tampilkan setup warning hanya jika belum dikonfigurasi
+  document.getElementById('setupWarn')?.classList.toggle('hidden', isConf());
 }
 
 /* MITRA TABLE — now with bank columns */
@@ -1609,19 +1630,26 @@ function renderCabangTable() {
   cfg.cabang.forEach((c, i) => tb.appendChild(buildCabangRow(i, c)));
 }
 function buildCabangRow(i, c) {
-  const opts = cfg.mitra.map(m =>
-    `<option value="${esc(m.id)}" ${m.id===c.idMitra?'selected':''}>${esc(m.id)} – ${esc(m.nama)}</option>`
+  // Bangun datalist dari cfg.mitra untuk autocomplete (bukan dropdown terkunci)
+  const listId = `dlMitra_${i}`;
+  const opts   = cfg.mitra.map(m =>
+    `<option value="${esc(m.id)}">${esc(m.id)} – ${esc(m.nama)}</option>`
   ).join('');
+
   const tr = document.createElement('tr');
   tr.innerHTML = `
     <td><input class="tbl-inp" type="text" value="${esc(c.area)}" placeholder="Nama Area"
       oninput="cfg.cabang[${i}].area=this.value"></td>
     <td><input class="tbl-inp" type="text" value="${esc(c.cabang)}" placeholder="Nama Cabang"
       oninput="cfg.cabang[${i}].cabang=this.value"></td>
-    <td><div class="tbl-sel-wrap">
-      <select class="tbl-sel" onchange="cfg.cabang[${i}].idMitra=this.value">
-        <option value="">— Pilih —</option>${opts}
-      </select></div></td>
+    <td>
+      <input class="tbl-inp" type="text" value="${esc(c.idMitra)}"
+        placeholder="Ketik ID Mitra..."
+        list="${listId}"
+        oninput="cfg.cabang[${i}].idMitra=this.value"
+        style="min-width:0;">
+      <datalist id="${listId}">${opts}</datalist>
+    </td>
     <td><button class="btn-del" onclick="cfg.cabang.splice(${i},1);renderCabangTable()">✕</button></td>`;
   return tr;
 }
@@ -1635,22 +1663,43 @@ function renderAdminTables() { renderMitraTable(); renderCabangTable(); }
 
 /* SAVE CONFIG */
 async function saveConfig() {
-  if (!isConf()) { showToast('URL Apps Script belum dikonfigurasi'); return; }
   const mitra  = cfg.mitra.filter(m => m.id.trim() && m.nama.trim());
-  const cabang = cfg.cabang.filter(c => c.area.trim() && c.cabang.trim() && c.idMitra.trim());
+  const cabang = cfg.cabang.filter(c => c.area.trim() && c.cabang.trim()); // idMitra boleh kosong
   const btn = document.getElementById('btnSaveCfg');
   btn.disabled = true; btn.textContent = '⏳ Menyimpan...';
+
+  // Selalu simpan ke localStorage dulu
+  cfg.mitra  = mitra;
+  cfg.cabang = cabang;
+  localStorage.setItem(LS_KEY, JSON.stringify(cfg));
+  renderAdminTables();
+  applyCfg(cfg);
+
+  if (!isConf()) {
+    // Belum ada koneksi server — simpan lokal saja
+    document.getElementById('admSaveStatus').textContent =
+      `💾 Tersimpan lokal – ${mitra.length} mitra, ${cabang.length} cabang (belum ke server)`;
+    setConn('o', `Tersimpan di browser · ${mitra.length} mitra, ${cabang.length} cabang · Belum ke server`);
+    btn.disabled = false; btn.innerHTML = '💾 &nbsp;Simpan Semua';
+    return;
+  }
+
   try {
-    const resp = await fetch(SCRIPT_URL, { method:'POST', body: JSON.stringify({ action:'saveConfig', mitra, cabang }) });
+    const resp = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      body:   JSON.stringify({ action:'saveConfig', mitra, cabang })
+    });
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const result = await resp.json();
     if (result.status === 'ERROR') throw new Error(result.msg);
-    cfg.mitra = mitra; cfg.cabang = cabang;
-    localStorage.setItem(LS_KEY, JSON.stringify(cfg));
-    renderAdminTables(); applyCfg(cfg);
-    document.getElementById('admSaveStatus').textContent = `✅ Tersimpan – ${mitra.length} mitra, ${cabang.length} cabang`;
-    setConn('g', `Data disimpan · ${mitra.length} mitra, ${cabang.length} cabang`);
-  } catch(e) { showToast('❌ Gagal menyimpan: ' + e.message); }
+    document.getElementById('admSaveStatus').textContent =
+      `✅ Tersimpan ke server – ${mitra.length} mitra, ${cabang.length} cabang`;
+    setConn('g', `Data disimpan ke server · ${mitra.length} mitra, ${cabang.length} cabang`);
+  } catch(e) {
+    document.getElementById('admSaveStatus').textContent =
+      `⚠️ Tersimpan lokal, gagal ke server: ${e.message}`;
+    showToast('❌ Gagal simpan ke server: ' + e.message + ' — Data sudah tersimpan di browser.');
+  }
   btn.disabled = false; btn.innerHTML = '💾 &nbsp;Simpan Semua';
 }
 
